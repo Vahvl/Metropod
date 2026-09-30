@@ -121,17 +121,17 @@ private fun calculateThumbnailDimensions(
     cornerRadius: Dp = ThumbnailCornerRadius,
     isLandscape: Boolean = false
 ): ThumbnailDimensions {
-    // In landscape, use height as the constraining dimension for a square thumbnail
-    val effectiveSize = if (isLandscape) {
-        minOf(containerWidth, containerHeight) - (horizontalPadding * 2)
+    val effectiveSize = if (containerHeight < containerWidth) {
+        containerHeight - horizontalPadding
     } else {
-        containerWidth - (horizontalPadding * 2)
+        containerWidth - horizontalPadding * 2
     }
+
     return ThumbnailDimensions(
         itemWidth = containerWidth,
         containerSize = containerWidth,
         thumbnailSize = effectiveSize,
-        cornerRadius = cornerRadius * 2
+        cornerRadius = cornerRadius * 5
     )
 }
 
@@ -224,7 +224,7 @@ fun Thumbnail(
         key = PlayerBackgroundStyleKey,
         defaultValue = PlayerBackgroundStyle.DEFAULT
     )
-    
+
     // Pre-calculate text color based on background style
     val textBackgroundColor = getTextColor(playerBackground)
     
@@ -379,7 +379,7 @@ fun Thumbnail(
                         flingBehavior = rememberSnapFlingBehavior(thumbnailSnapLayoutInfoProvider),
                         userScrollEnabled = isScrollEnabled,
                         modifier = if (isLandscape) {
-                            Modifier.size(dimensions.thumbnailSize + (PlayerHorizontalPadding * 2))
+                            Modifier.size(dimensions.thumbnailSize + (PlayerHorizontalPadding))
                         } else {
                             Modifier.fillMaxSize()
                         }
@@ -433,55 +433,36 @@ fun Thumbnail(
 /**
  * Header component showing "Now Playing" and queue/album title.
  */
+
+
 @Composable
-private fun ThumbnailHeader(
+fun ThumbnailHeader(
     queueTitle: String?,
     albumTitle: String?,
     textColor: Color,
     modifier: Modifier = Modifier
 ) {
-    val listenTogetherManager = LocalListenTogetherManager.current
-    val listenTogetherRoleState = listenTogetherManager?.role?.collectAsStateWithLifecycle(initialValue = RoomRole.NONE)
-    val isListenTogetherGuest = listenTogetherRoleState?.value == RoomRole.GUEST
-    Box(
-        modifier = modifier
-            .fillMaxWidth()
-            .padding(horizontal = 16.dp, vertical = 8.dp)
-    ) {
-        Column(
-            horizontalAlignment = Alignment.CenterHorizontally,
-            modifier = Modifier
-                .align(Alignment.Center)
-                .padding(horizontal = 48.dp)
+    val playingFrom = queueTitle ?: albumTitle
+    if (!playingFrom.isNullOrBlank()) {
+            Box(
+            modifier = modifier
+                .fillMaxWidth()
+                .padding(horizontal = PlayerHorizontalPadding, vertical = 2.dp)
         ) {
-            // Listen Together indicator
-            if (listenTogetherRoleState?.value != RoomRole.NONE) {
-                Text(
-                    text = if (listenTogetherRoleState?.value == RoomRole.HOST) "Hosting Listen Together" else "Listening Together",
-                    style = MaterialTheme.typography.titleMedium,
-                    color = textColor
-                )
-            } else {
-                Text(
-                    text = stringResource(R.string.now_playing),
-                    style = MaterialTheme.typography.titleMedium,
-                    color = textColor
-                )
-            }
-            val playingFrom = queueTitle ?: albumTitle
-            if (!playingFrom.isNullOrBlank()) {
-                Spacer(modifier = Modifier.height(4.dp))
-                Text(
-                    text = playingFrom,
-                    style = MaterialTheme.typography.titleMedium,
-                    color = textColor.copy(alpha = 0.8f),
-                    maxLines = 1,
-                    modifier = Modifier.basicMarquee()
-                )
-            }
+            Text(
+                text = playingFrom,
+                style = MaterialTheme.typography.titleMedium,
+                color = textColor.copy(alpha = 0.8f),
+                maxLines = 1,
+                modifier = Modifier
+                    .align(Alignment.CenterStart)
+                    .basicMarquee()
+            )
         }
     }
 }
+
+
 
 /**
  * Individual thumbnail item in the carousel.
@@ -511,7 +492,7 @@ private fun ThumbnailItem(
         modifier = modifier
             .then(
                 if (isLandscape) {
-                    Modifier.size(dimensions.thumbnailSize + (PlayerHorizontalPadding * 2))
+                    Modifier.size(dimensions.thumbnailSize + (PlayerHorizontalPadding))
                 } else {
                     Modifier
                         .width(dimensions.itemWidth)

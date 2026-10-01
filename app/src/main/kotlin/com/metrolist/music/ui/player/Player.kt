@@ -357,7 +357,6 @@ fun BottomSheetPlayer(
     val coroutineScope = rememberCoroutineScope()
 
 
-
     // Listen Together state (reactive)
     val listenTogetherManager = LocalListenTogetherManager.current
     val listenTogetherRoleState =
@@ -1816,7 +1815,7 @@ fun BottomSheetPlayer(
                                     when (currentWheelMode) {
                                         WheelMode.SEEK -> {
                                             val currentPos = sliderPosition ?: effectivePosition
-                                            val seekStepMs = (deltaAngle * 50).toLong()
+                                            val seekStepMs = (deltaAngle * 100).toLong()
                                             val newPos =
                                                 (currentPos + seekStepMs).coerceIn(0L, duration)
                                             sliderPosition = newPos
@@ -1827,16 +1826,16 @@ fun BottomSheetPlayer(
                                         WheelMode.VOLUME -> {
                                             val audioManager =
                                                 context.getSystemService(Context.AUDIO_SERVICE) as AudioManager
-                                            if (deltaAngle > 5f) {
-                                                audioManager.adjustStreamVolume(
-                                                    AudioManager.STREAM_MUSIC,
-                                                    AudioManager.ADJUST_LOWER,
-                                                    0
-                                                )
-                                            } else if (deltaAngle < -5f) {
+                                            if (deltaAngle > 10f) {
                                                 audioManager.adjustStreamVolume(
                                                     AudioManager.STREAM_MUSIC,
                                                     AudioManager.ADJUST_RAISE,
+                                                    0
+                                                )
+                                            } else if (deltaAngle < -10f) {
+                                                audioManager.adjustStreamVolume(
+                                                    AudioManager.STREAM_MUSIC,
+                                                    AudioManager.ADJUST_LOWER,
                                                     0
                                                 )
                                             }
@@ -2020,33 +2019,35 @@ fun BottomSheetPlayer(
                 Spacer(Modifier.height(20.dp))
             }
         }
-    }
 
-    AnimatedVisibility(
-        visible = !isFullScreen,
-        enter = slideInVertically(initialOffsetY = { it }) + fadeIn(),
-        exit = shrinkVertically(shrinkTowards = Alignment.Top) + slideOutVertically(targetOffsetY = { it }) + fadeOut(),
-    ) {
-        Queue(
-            state = queueSheetState,
-            playerBottomSheetState = state,
-            background =
-                if (useBlackBackground) {
-                    Color.Black
-                } else {
-                    MaterialTheme.colorScheme.surfaceContainer
+
+        AnimatedVisibility(
+            visible = !isFullScreen,
+            enter = slideInVertically(initialOffsetY = { it }) + fadeIn(),
+            exit = shrinkVertically(shrinkTowards = Alignment.Top) + slideOutVertically(
+                targetOffsetY = { it }) + fadeOut(),
+        ) {
+            Queue(
+                state = queueSheetState,
+                playerBottomSheetState = state,
+                background =
+                    if (useBlackBackground) {
+                        Color.Black
+                    } else {
+                        MaterialTheme.colorScheme.surfaceContainer
+                    },
+                onBackgroundColor = onBackgroundColor,
+                TextBackgroundColor = TextBackgroundColor,
+                textButtonColor = textButtonColor,
+                iconButtonColor = iconButtonColor,
+                pureBlack = pureBlack,
+                showInlineLyrics = showInlineLyrics,
+                playerBackground = playerBackground,
+                onToggleLyrics = {
+                    showInlineLyrics = !showInlineLyrics
                 },
-            onBackgroundColor = onBackgroundColor,
-            TextBackgroundColor = TextBackgroundColor,
-            textButtonColor = textButtonColor,
-            iconButtonColor = iconButtonColor,
-            pureBlack = pureBlack,
-            showInlineLyrics = showInlineLyrics,
-            playerBackground = playerBackground,
-            onToggleLyrics = {
-                showInlineLyrics = !showInlineLyrics
-            },
-        )
+            )
+        }
     }
 }
 
@@ -2101,16 +2102,17 @@ fun ClickWheel(
                         val prev = change.position - dragAmount - center
                         val current = change.position - center
                         val prevAngle = Math.toDegrees(atan2(prev.y.toDouble(), prev.x.toDouble()))
-                        val currentAngle = Math.toDegrees(atan2(current.y.toDouble(), current.x.toDouble()))
+                        val currentAngle =
+                            Math.toDegrees(atan2(current.y.toDouble(), current.x.toDouble()))
                         var delta = (currentAngle - prevAngle).toFloat()
 
                         if (delta > 180f) delta -= 360f
                         else if (delta < -180f) delta += 360f
 
                         hapticAngleAccumulator += delta
-                        if (kotlin.math.abs(hapticAngleAccumulator) >= 15f) {
+                        if (kotlin.math.abs(hapticAngleAccumulator) >= 30f) {
                             view.performHapticFeedback(HapticFeedbackConstants.CLOCK_TICK)
-                            hapticAngleAccumulator %= 15f
+                            hapticAngleAccumulator %= 30f
                         }
 
                         onRotate(delta)
@@ -2165,8 +2167,10 @@ fun ClickWheel(
                 .clickable(
                     interactionSource = remember { MutableInteractionSource() },
                     indication = null
-                ) { view.performHapticFeedback(HapticFeedbackConstants.VIRTUAL_KEY)
-                    onPlayPauseClick() }
+                ) {
+                    view.performHapticFeedback(HapticFeedbackConstants.VIRTUAL_KEY)
+                    onPlayPauseClick()
+                }
         )
 
         Icon(
@@ -2180,8 +2184,10 @@ fun ClickWheel(
                 .clickable(
                     interactionSource = remember { MutableInteractionSource() },
                     indication = null
-                ) { view.performHapticFeedback(HapticFeedbackConstants.VIRTUAL_KEY)
-                    onPreviousClick() }
+                ) {
+                    view.performHapticFeedback(HapticFeedbackConstants.VIRTUAL_KEY)
+                    onPreviousClick()
+                }
         )
 
         Icon(
@@ -2195,8 +2201,10 @@ fun ClickWheel(
                 .clickable(
                     interactionSource = remember { MutableInteractionSource() },
                     indication = null
-                ) { view.performHapticFeedback(HapticFeedbackConstants.VIRTUAL_KEY)
-                    onNextClick() }
+                ) {
+                    view.performHapticFeedback(HapticFeedbackConstants.VIRTUAL_KEY)
+                    onNextClick()
+                }
         )
 
         Box(
@@ -2216,8 +2224,10 @@ fun ClickWheel(
                     color = Color.White.copy(alpha = 0.3f),
                     shape = CircleShape
                 )
-                .clickable { view.performHapticFeedback(HapticFeedbackConstants.VIRTUAL_KEY)
-                    onCenterClick() }
+                .clickable {
+                    view.performHapticFeedback(HapticFeedbackConstants.VIRTUAL_KEY)
+                    onCenterClick()
+                }
         ) {
             Icon(
                 painter = painterResource(
@@ -2452,7 +2462,6 @@ fun InlineQueueView(
             }
         }
     }
-
 
 
 }

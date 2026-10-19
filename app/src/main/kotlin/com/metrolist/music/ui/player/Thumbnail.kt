@@ -328,25 +328,14 @@ fun Thumbnail(
                 .fillMaxSize()
                 .then(if (!isLandscape) Modifier.statusBarsPadding() else Modifier),
         ) {
-            Column(
-                modifier = Modifier.fillMaxSize(),
-                horizontalAlignment = Alignment.CenterHorizontally,
-                verticalArrangement = if (isLandscape) Arrangement.Center else Arrangement.Top
+            Box(
+                modifier = Modifier.fillMaxSize()
             ) {
-                // Now Playing header - hide in landscape mode
-                if (!isLandscape) {
-                    ThumbnailHeader(
-                        queueTitle = queueTitle,
-                        albumTitle = mediaMetadata?.album?.title,
-                        textColor = textBackgroundColor
-                    )
-                }
-                
                 // Thumbnail content
                 BoxWithConstraints(
                     contentAlignment = Alignment.Center,
                     modifier = if (isLandscape) {
-                        Modifier.weight(1f, false)
+                        Modifier.fillMaxSize()
                     } else {
                         Modifier.fillMaxSize()
                     }
@@ -408,6 +397,16 @@ fun Thumbnail(
                         }
                     }
                 }
+
+                // Now Playing header - hide in landscape mode
+                if (!isLandscape) {
+                    ThumbnailHeader(
+                        queueTitle = queueTitle,
+                        albumTitle = mediaMetadata?.album?.title,
+                        textColor = textBackgroundColor,
+                        modifier = Modifier.align(Alignment.TopCenter)
+                    )
+                }
             }
         }
 
@@ -444,10 +443,10 @@ fun ThumbnailHeader(
 ) {
     val playingFrom = queueTitle ?: albumTitle
     if (!playingFrom.isNullOrBlank()) {
-            Box(
+        Box(
             modifier = modifier
                 .fillMaxWidth()
-                .padding(horizontal = PlayerHorizontalPadding, vertical = 2.dp)
+                .padding(start = PlayerHorizontalPadding, end = PlayerHorizontalPadding, top = 8.dp)
         ) {
             Text(
                 text = playingFrom,

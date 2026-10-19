@@ -1799,7 +1799,7 @@ fun BottomSheetPlayer(
                                                     R.string.mute
                                                 )
                                             } else {
-                                                if (effectiveIsPlaying) stringResource(R.string.pause) else stringResource(
+                                                if (effectiveIsPlaying) stringResource(R.string.player_pause) else stringResource(
                                                     R.string.play
                                                 )
                                             },
@@ -1813,7 +1813,7 @@ fun BottomSheetPlayer(
                                                     R.string.mute
                                                 )
                                             } else {
-                                                if (effectiveIsPlaying) stringResource(R.string.pause) else stringResource(
+                                                if (effectiveIsPlaying) stringResource(R.string.player_pause) else stringResource(
                                                     R.string.play
                                                 )
                                             },

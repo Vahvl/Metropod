@@ -2168,7 +2168,7 @@ fun ClickWheel(
 
                         hapticAngleAccumulator += delta
                         if (kotlin.math.abs(hapticAngleAccumulator) >= 30f) {
-                            view.performHapticFeedback(HapticFeedbackConstants.CLOCK_TICK)
+                            view.performHapticFeedback(HapticFeedbackConstants.CONTEXT_CLICK)
                             hapticAngleAccumulator %= 30f
                         }
 
@@ -2473,6 +2473,14 @@ fun InlineQueueView(
     )
     val queueTitle by playerConnection.queueTitle.collectAsStateWithLifecycle()
     val mediaMetadata by playerConnection.mediaMetadata.collectAsState()
+
+    LaunchedEffect(currentWindowIndex) {
+        if (currentWindowIndex >= 0) {
+            val targetIndex = (currentWindowIndex - 4).coerceAtLeast(0)
+            lazyListState.animateScrollToItem(targetIndex)
+        }
+    }
+
     Column(
         modifier = modifier
             .fillMaxSize()
@@ -2491,7 +2499,7 @@ fun InlineQueueView(
         ) {
             LazyColumn(
                 state = lazyListState,
-                modifier = modifier
+                modifier = Modifier
                     .size(width = maxWidth, height = maxWidth)
                     .padding(PlayerHorizontalPadding)
             ) {
@@ -2503,11 +2511,13 @@ fun InlineQueueView(
                     val metadata = window.mediaItem.metadata
                     Row(
                         verticalAlignment = Alignment.CenterVertically,
-                        modifier = Modifier.fillMaxWidth()
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(vertical = 4.dp)
                     ) {
                         Text(
                             text = metadata?.title ?: "",
-                            style = MaterialTheme.typography.bodyMedium,
+                            style = MaterialTheme.typography.bodyLarge,
                             fontWeight = if (isCurrent) FontWeight.Bold else FontWeight.Normal,
                             color = textColor,
                             maxLines = 1,
@@ -2519,8 +2529,6 @@ fun InlineQueueView(
             }
         }
     }
-
-
 }
 
 @Composable

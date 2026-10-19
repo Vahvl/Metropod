@@ -173,6 +173,7 @@ import com.metrolist.music.constants.ThumbnailCornerRadius
 import com.metrolist.music.constants.UseNewPlayerDesignKey
 import com.metrolist.music.db.entities.LyricsEntity
 import com.metrolist.music.extensions.metadata
+import com.metrolist.music.extensions.toggleRepeatMode
 import com.metrolist.music.listentogether.RoomRole
 import com.metrolist.music.models.MediaMetadata
 import com.metrolist.music.ui.component.BottomSheet
@@ -1372,9 +1373,35 @@ fun BottomSheetPlayer(
                                             .size(24.dp),
                                 )
                             }
+                        } else {
+                            val shuffleModeEnabled by playerConnection.shuffleModeEnabled.collectAsStateWithLifecycle()
+                            Box(
+                                modifier =
+                                    Modifier
+                                        .size(40.dp)
+                                        .clickable (
+                                            interactionSource = remember { MutableInteractionSource() },
+                                            indication = null){
+                                            view.performHapticFeedback(HapticFeedbackConstants.CLOCK_TICK)
+                                            playerConnection.player.shuffleModeEnabled = !shuffleModeEnabled
+                                        },
+                            ) {
+                                Icon(
+                                    painter = painterResource(R.drawable.shuffle),
+                                    contentDescription = null,
+                                    tint = (if (shuffleModeEnabled) textButtonColor else iconButtonColor),
+                                    modifier =
+                                        Modifier
+                                            .align(Alignment.Center)
+                                            .size(24.dp),
+                                )
+                            }
                         }
-
                     }
+
+                    Spacer(modifier = Modifier.size(12.dp))
+
+
 
                     AnimatedContent(
                         targetState = showInlineLyrics,
@@ -1411,6 +1438,36 @@ fun BottomSheetPlayer(
                                     painter = painterResource(R.drawable.more_horiz),
                                     contentDescription = null,
                                     tint = iconButtonColor,
+                                    modifier =
+                                        Modifier
+                                            .align(Alignment.Center)
+                                            .size(24.dp),
+                                )
+                            }
+                        } else {
+                            Box(
+                                modifier =
+                                    Modifier
+                                        .size(40.dp)
+                                        .clickable (
+                                            interactionSource = remember { MutableInteractionSource() },
+                                            indication = null){
+                                            view.performHapticFeedback(HapticFeedbackConstants.CLOCK_TICK)
+                                            playerConnection.player.toggleRepeatMode()
+                                        },
+                            ) {
+                                Icon(
+                                    painter = painterResource(when(repeatMode){
+                                        Player.REPEAT_MODE_ALL -> R.drawable.repeat
+                                        Player.REPEAT_MODE_ONE -> R.drawable.repeat_one
+                                        else -> R.drawable.repeat
+                                    }),
+                                    contentDescription = null,
+                                    tint = (when(repeatMode){
+                                        Player.REPEAT_MODE_ALL -> textButtonColor
+                                        Player.REPEAT_MODE_ONE -> textButtonColor
+                                        else -> iconButtonColor
+                                    }),
                                     modifier =
                                         Modifier
                                             .align(Alignment.Center)
